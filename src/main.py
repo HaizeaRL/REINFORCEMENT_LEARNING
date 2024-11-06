@@ -1,6 +1,7 @@
 import os
 import sys
 import pandas as pd
+from copy import deepcopy
 
 pd.set_option("display.max_columns", None)
 
@@ -9,9 +10,9 @@ pd.set_option("display.max_columns", None)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from modules import environment_creation_functions as ecf
+from modules import environment as env
 from modules import learners as learn
 from modules import environment_agent_execution as eae
-
 
 
 
@@ -31,13 +32,18 @@ print(f"Final state: {environment.final_state}")
 print(f"Initial reward score: {environment.total_reward}")
 print(f"Actions: {environment.actions_done}")
 
-# visualize created environment
+'''# visualize created environment
 print(f"ENVIRONMENT VISUALIZATION:")
 ecf.visualize_environment(dim, barriers, src, dest)'''
 
-# SHORT-TERM FOCUS USING QLEARNER
 # TODO: MISMO ENVIRONMENT 2 STRATEGY OF QLEARNNG JUPYTER
+# TODO: Correct from: ValueError: too many values to unpack (expected 2)
+
+
+# SHORT-TERM FOCUS USING QLEARNER
+print("SHORT-TERM FOCUS FOR QLEARN ALGORITHM")
 episodes_list, best_episode, src = eae.agent_learning(learner=learn.QLearner, # Learning algorithm
+                                        environment = deepcopy(environment),
                                         num_episodes=30,
                                         learning_rate=0.1,
                                         discount_factor=0.1,    # Near 0, learn to move to the next most rewarding state
@@ -48,7 +54,9 @@ eae.print_process_info(best_episode=best_episode, src = src)
 
 
 # LONG-TERM FOCUS USING QLEARNER
-episodes_list, best_episode, src = eae.agent_learning(learner=learn.QLearner, # Learning algorithm
+print("\nLONG-TERM FOCUS FOR QLEARN ALGORITHM")
+episodes_list, best_episode= eae.agent_learning(learner=learn.QLearner, # Learning algorithm
+                                        environment = deepcopy(environment),
                                         num_episodes=30,
                                         learning_rate=0.1,
                                         discount_factor=0.9,    # Near 1, move with a view to maximizing the final reward

@@ -6,11 +6,10 @@ import numpy as np
 # Add the parent directory (where modules is located) to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from modules import environment_creation_functions as ecf
 from modules import environment as env
 from modules import learners as learn
 
-def agent_learning(learner=learn.Learner,
+def agent_learning(learner=learn.Learner,  environment = env.Environment,
                    num_episodes=10, learning_rate=0.1, discount_factor=0.1, ratio_exploration=0.05,
                    verbose=False):
     """
@@ -18,6 +17,8 @@ def agent_learning(learner=learn.Learner,
 
     Parameters:       
         learner (Learner): The corresponding a reinforcement learning algorithm for the agent.
+        environment (Environment): Environment to learn the agent.
+
         num_episodes (int): Number of times the agent is executed (or learns) in the environment.
         learning_rate (float): Learning rate that determines the extent of learning in each step.
         discount_factor (float): Discount factor to weigh future rewards. 
@@ -29,23 +30,8 @@ def agent_learning(learner=learn.Learner,
         episodes_list: All learning episodes data.
         best_episode: Best learned episode data.
     """  
-  
-    # Create environment
-    dim, grid_matrix_positions, barriers, src, dest, reward_matrix  = ecf.create_environment(False)
-    environment = env.Environment(reward_matrix, list(src), list(dest)) # convert states from tuple into list
-
-    if verbose: 
-
-        print(f"\nENVIRONMENT PARAMETERS:")
-        print(f"Possible actions: {environment.actions}")
-        print(f"Reward matrix:")
-        ecf.visualize_matrix (dim, environment.rewards)
-        print(f"Penalty value: {environment.action_penalty}")
-        print(f"Initial state: {environment.state}")
-        print(f"Final state: {environment.final_state}")
-        print(f"Initial reward score: {environment.total_reward}")
-        print(f"Actions: {environment.actions_done}")
-        
+    # get initial point to use for the reset
+    src = environment.state
 
     # Learning algorith instance
     learner = learner(environment=environment,
