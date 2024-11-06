@@ -47,7 +47,7 @@ class Learner(object):
         if np.random.uniform() < self.ratio_exploration:
             # selection of possible actions at random.
             next_action = np.random.choice(list(self.environment.actions))
-        else:           
+        else:  
             # find the maximum Q-value for all actions
             max_q_value = np.array(self.q_table[state[0]][state[1]]).max()
 
@@ -75,7 +75,7 @@ class Learner(object):
         Function that prints q-table or policy.
         """
         q_table = []
-        for state_x, actions in enumerate(q_table):
+        for state_x, actions in enumerate(self.q_table):
             for state_y, action in enumerate(actions):
                 # deepcopy actions values
                 q = deepcopy(action)
@@ -150,14 +150,14 @@ class QLearner (Learner):
         future_q_value_options = self.q_table[new_state[0]][new_state[1]]
         
         # Calculate the expected future Q-value using the reward received and the maximum future Q-value
-        future_max_q_value = reward_action_taken + self.discount_factor * max(future_q_value_options)
+        future_max_q_value = reward_action_taken + self.discount_factor * max(future_q_value_options)       
         if is_final_state:
             future_max_q_value = reward_action_taken    # Maximum reward if reach to final state
 
         # Update the Q-table by applying the Q-Learning update rule. 
         # The new value for the action taken is based on the temporal difference
         self.q_table[old_state[0]][old_state[1]][idx_action_taken] = \
-            actual_q_value + self.learning_rate * (future_max_q_value - actual_q_value)
+            actual_q_value + self.learning_rate * (future_max_q_value - actual_q_value)        
 
 class SARSALearner (Learner):
 
