@@ -2,6 +2,7 @@
 AGENT LEARNING FUNCTIONS:
 
 Apply corresponding learning function in agent's environment.
+Q-LEARNING and SARSA algorithms.
 '''
 
 import numpy as np
