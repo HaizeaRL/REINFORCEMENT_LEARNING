@@ -1,5 +1,9 @@
-import matplotlib
-matplotlib.use('TkAgg')
+'''
+ENVIRONMENT GRID CONSTRUCTION FUNCTIONS:
+
+Defines environment grid dimension, determines barrier number and their position, agent init and target position and
+checks whether created environment is reacheable.
+'''
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -238,7 +242,7 @@ def create_env_reward_matrix(dim, barriers, src, dest):
     m[dest[0]][dest[1]] = 100
     return m
 
-def create_environment(verbose = False):
+def create_environment(verbose = False, dim_min= 4, dim_max = 20):
     """
     Function to create a randomly generated matrix grid (environment) for an agent.
     Creates a matrix grid with barriers and evaluates whether a valid path is possible 
@@ -246,6 +250,8 @@ def create_environment(verbose = False):
 
     Parameters:
         verbose (Boolean): whether debug print must be shown or not.
+        dim_min (int): Min value of dimension for the random range.
+        dim_max (int): Max value of dimension for the random range.
 
     Returns:
         tuple: Returns the environment's dimension, grid matrix positions, barriers,
@@ -255,7 +261,7 @@ def create_environment(verbose = False):
         print("Creating maze")
 
         # Get maze dimension randomly
-        dim = random.randint(4,20)
+        dim = random.randint(dim_min, dim_max)
         print(f"Grid of: {dim} x {dim}")
 
         # Get grids positions

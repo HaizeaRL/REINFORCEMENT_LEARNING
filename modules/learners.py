@@ -1,3 +1,9 @@
+'''
+AGENT LEARNING FUNCTIONS:
+
+Apply corresponding learning function in agent's environment.
+'''
+
 import numpy as np
 import pandas as pd
 from copy import deepcopy

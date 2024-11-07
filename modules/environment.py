@@ -1,3 +1,9 @@
+'''
+AGENT ENVIRONMENT FUNCTIONS:
+
+Based on environment grid construction functions creates agent environment for reinforcement learning process.
+'''
+
 import numpy as np
 import pandas as pd
 from copy import deepcopy
@@ -110,19 +116,19 @@ class Environment(object):
                                   
         return self.state, reward, is_final_state       
 
-    def print_path_episode(self, src):
+    def print_path_episode(self, start_point):
         """
         Method that prints the path followed by the agent.
 
         Parameters:
-            src: Agent initical position to set as step 0.
+            start_point: Agent initial position to set as step 0.
 
         Returns: 
             None: prints the path followed by the agent.
         """
       
         path = [['-' for _ in range(len(self.rewards))] for _ in range(len(self.rewards[0]))]
-        path[src[0]][src[1]] = '0'
+        path[start_point[0]][start_point[1]] = '0'
 
         # Loop through actions and track repeated visits
         for index, step in enumerate(self.actions_done):

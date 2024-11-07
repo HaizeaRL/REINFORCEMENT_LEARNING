@@ -1,9 +1,14 @@
-import math
+'''
+CORRECT ENVIRONMENT CHECKING FUNCTIONS:
+
+Applies A* algorithm to determine whether a path exist from defined source and destination fields.
+Grid or maze bounds and barriers are taken into account.
+'''
+
 import heapq
 
 class Cell:
-    def __init__(self):
-      
+    def __init__(self):      
         self.parent_i = 0 # row index
         self.parent_j = 0 # column index
         self.f = float('inf') # Total cost of the cell (g + h)    

@@ -1,3 +1,10 @@
+'''
+AGENT - ENVIRONMENT EXECUTION FUNCTIONS:
+
+Learns how an agent must move in the environment using a Reinforcement Learning algorithm: Q-LEARNING or SARSA.
+Prints also the resulted learning path.
+'''
+
 import os
 import sys
 from copy import deepcopy
@@ -18,7 +25,6 @@ def agent_learning(learner=learn.Learner,  environment = env.Environment,
     Parameters:       
         learner (Learner): The corresponding a reinforcement learning algorithm for the agent.
         environment (Environment): Environment to learn the agent.
-
         num_episodes (int): Number of times the agent is executed (or learns) in the environment.
         learning_rate (float): Learning rate that determines the extent of learning in each step.
         discount_factor (float): Discount factor to weigh future rewards. 
@@ -29,11 +35,12 @@ def agent_learning(learner=learn.Learner,  environment = env.Environment,
     Returns:
         episodes_list: All learning episodes data.
         best_episode: Best learned episode data.
+        src (list): Agent first state as a list.
     """  
     # get initial point to use for the reset
     src = environment.state
 
-    # Learning algorith instance
+    # Learning algorithm instance
     learner = learner(environment=environment,
                       learning_rate=learning_rate,
                       discount_factor=discount_factor,
@@ -47,11 +54,13 @@ def agent_learning(learner=learn.Learner,  environment = env.Environment,
 
     # Iterate episodes
     for n_episode in range(0, num_episodes):
-        # start environment for each episode.
-        state = environment.reset(src) 
+
         # initialize variables
+        state = environment.reset(src)  # Initialize environment for each episode. Set agent start point,
         is_final_state = np.array_equal(environment.state, environment.final_state)   
         num_steps_episode = 0
+
+        # start learning
         while not is_final_state: # While non-terminal state
             old_state = state[:]            
             
@@ -74,7 +83,7 @@ def agent_learning(learner=learn.Learner,  environment = env.Environment,
                            new_action=next_post_action,
                            is_final_state=is_final_state)
             
-            # Episode stem sum
+            # Episode step sum
             num_steps_episode += 1                                           
 
         # Save episode information: episode number, steps and total reward
@@ -96,16 +105,25 @@ def agent_learning(learner=learn.Learner,  environment = env.Environment,
     return episodes_list, best_episode, src
 
 
-def print_process_info(best_episode, src, print_best_episode_info=True,
+def print_process_info(best_episode, start_point, print_best_episode_info=True,
                        print_q_table=True, print_best_values_states=True,
                        print_best_actions_states=True, 
                        print_steps=True, print_path=True):
     """
     Print execution best episode information.
-    Q-table results
-    Best Q-values of each state.
-    Best steps of each state.
-    Steps that follows,
+
+    Parameters:       
+        best_episode (Learner): Best episode action steps.
+        start_point (List): Agent start point to set correctly to path visualization.
+        print_best_episode_info (Boolean): Summary of best episode actions and gained reward. Default = True.
+        print_q_table (Boolean): Prints q-table. Default = True.
+        print_best_values_states (Boolean): Prints best Q-values of each state. Default = True.
+        print_best_actions_states (Boolean): Prints best steps of each state. Default = True.
+        print_steps (Boolean): Prints steps that follows in the best episode. Default = True.
+        print_path (Boolean): Prints followed path. Default = True.
+        
+    Returns:
+        None: Prints reinforcement learning results.
     """
     if print_best_episode_info:
         print('\nBEST EPISODE:\nEPISODE {}\n\tActions: {}\n\tReward: {}'
@@ -130,4 +148,4 @@ def print_process_info(best_episode, src, print_best_episode_info=True,
 
     if print_path:
         print('\nPATH:')
-        best_episode['episode'].print_path_episode(src)
+        best_episode['episode'].print_path_episode(start_point)

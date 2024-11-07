@@ -1,50 +1,56 @@
 # REINFORCEMENT_LEARNING
 
-## Installation and Run Steps
+-   **Author**: Haizea Rumayor Lazkano
+-   **Last update**: November 2024
 
-To get started with this project, please follow these steps:
+------------------------------------------------------------------------
 
-### Prerequisites
+## Installation
 
-1. **Install Docker**: Ensure Docker is installed on your machine. You can download and install it from the [Docker website](https://www.docker.com/products/docker-desktop).
+To ensure a clean and isolated environment for this project, a `Dockerfile` is provided to launch Docker locally and run a Python 3.7 container. This approach ensures that the local environment remains unaffected and that all dependencies are installed within the container.
 
-### Configuration for Matplotlib
+### Prerequisites:
 
-To use Matplotlib in a Docker container with GUI support, you'll need to configure X11 forwarding on your Windows machine. Follow these instructions:
+- **Docker** must be installed on your machine. You can download and install Docker from the [official website](https://www.docker.com/get-started).
 
-1. **Install XLaunch**:
-   - Download and install **XLaunch** from the [Xming website](https://sourceforge.net/projects/xming/).
-   - Launch XLaunch and choose **"Multiple windows"** when prompted.
-   - Set the display number to **0**.
-   - Select **"Start No client"**.
-   - Choose **"Native OpenGL"**.
-   - Check **"No access control"** to allow connections.
+### Steps to Set Up and Run the Project:
 
-2. **Get Your Windows IP Address**:
-   - Open Command Prompt and run the following command to find your IP address:
-     ```bash
-     ipconfig
-     ```
-   - Note the IPv4 Address (e.g., `192.168.1.100`).
+1. **Build the Docker Image**:
 
-### Building the Docker Image
-
-1. **Navigate to the Project Directory**:
-   Open your terminal and navigate to the root directory of the project where the `Dockerfile` is located.
-
-2. **Build the Docker Image**:
-   Run the following command to build the Docker image. Replace `<app>` with corresponding applcation name:
+   First, build the Docker image for the project using the provided `Dockerfile`. Replace `<app-name>` with the name of your application or service:
    ```bash
-   docker build -t <app> .
+   docker build -t <app-name> .
    ```
-2. **Run the Docker Image**:
-    Replace `<ip_address>` and `<app>` with corresponding values:
-    ```bash
-    docker run --rm -it --env=DISPLAY=<ip_address>:0 -v="$(Get-Location):/app" <app>
-    ```
-3. **Navigate to corresponding script and run the script**:
-   Run the `main.py` script as many times as needed to generate recommendations:
+
+2. **Run the Docker Container**:
+
+   After building the image, run the container using the following command:
    ```bash
-    cd src
-    python main.py
+   docker run -it --rm -p 8888:8888 -v ${PWD}:/app <app-name>
+   ```
+
+  This command will:
+
+- Mount your current directory (`${PWD}`) to the `/app` folder inside the container.
+- Map port `8888` from the container to your local machine, allowing access to Jupyter.
+- Automatically remove the container when it stops (`--rm`).
+
+
+3. **Access Jupyter Notebooks**:
+
+   Once the container is running, you can access the Jupyter notebook interface by opening your browser and navigating to `http://localhost:8888`.
+
+
+If you execute the scripts presented in the project, the results will be created and saved in the container. If you want to retrieve the results locally, follow these instructions:
+
+**Retrieve resuts locally**   
+   
+   Identify the running Docker container:
+   ```bash
+    docker ps
+   ```
+
+   Navigate to the project directory and copy the file from the container to your local machine, replacing `<docker_instance>` and `<docker_path_to_retrieve>` with the corresponding values.
+   ```bash
+    docker cp <docker_instance>:/<docker_path_to_retrieve> .
    ```
