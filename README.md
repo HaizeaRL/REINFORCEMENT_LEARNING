@@ -21,7 +21,7 @@ The project implements several reinforcement learning algorithms, including **Q-
   
   - **Q-Learning** and **SARSA**: These algorithms are used for smaller grid environments (ranging from 4x4 to 20x20 grids) to enable the agent to learn basic navigation tasks.
   
-  - **Deep Q-Learning**: For larger environments (ranging from 100x100 to 500x500 grids), Deep Q-Learning is employed to allow the agent to learn complex navigation strategies in larger and more challenging mazes.
+  - **Deep Q-Learning**: For larger environments (ranging from 20x20 to 100x100 grids), Deep Q-Learning is employed to allow the agent to learn complex navigation strategies in larger and more challenging mazes.
 
 ## Project Structure
 
