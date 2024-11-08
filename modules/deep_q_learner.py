@@ -12,7 +12,7 @@ from tensorflow.keras.layers import Dense
 
 class DeepQLearner(object):
    
-    def __init__(self, environment, max_memory=100, discount_factor=0.1, explotation_rate=0.95, max_steps=500):
+    def __init__(self, environment, max_memory=100, discount_factor=0.1, explotation_rate=0.95):
         """
         Class implementing a reinforcement Deep Q-learning algorithm.
         
@@ -22,7 +22,6 @@ class DeepQLearner(object):
             discount_factor (float): Discount factor to weigh future rewards. 
                 (0 = short-term focus, 1 = long-term focus).
             explotation_rate (float): Explotation ratio, controlling the trade-off between exploration and exploitation.
-            max_steps (int): Maximum number of steps to take per each episode.
         """
         self.environment = environment       
         self.model = self.create_model()   # Neural Network creation
@@ -31,7 +30,6 @@ class DeepQLearner(object):
         # Experience Replay controls:  Current State | Taken Action | Reward | Next State | Is final state?
         self.memory = list()  # List of actions taken                  
         self.max_memory = max_memory # maximum memory size
-        self.max_steps= max_steps # used to control memory shape
         
         # Too ratios: these values will gradually guide the agent from exploration to exploitation.
         self.max_explotation_rate = explotation_rate
@@ -80,7 +78,7 @@ class DeepQLearner(object):
             next_action = np.random.choice(list(self.environment.actions))
         else:
             # selection of the action that gives the highest value.
-            qus = self.model.predict([state])
+            qus = self.model.predict([state], verbose=0)
             idx_action = np.argmax(qus[0])
             next_action = list(self.environment.actions)[idx_action]
 
@@ -144,11 +142,11 @@ class DeepQLearner(object):
         # for each selected steps, apply the learning process
         for state, action, reward, new_state, is_final_state in batch:
             # Predict Q-value for state
-            q_values = self.model.predict([state])
+            q_values = self.model.predict([state], verbose=0)
             idx_action = list(actions).index(action)
 
             # Calculate objetive best Q-value for the action
-            q_values[0][idx_action] = (reward + (self.discount_factor * np.amax(self.model.predict([new_state])[0]))
+            q_values[0][idx_action] = (reward + (self.discount_factor * np.amax(self.model.predict([new_state], verbose=0)[0]))
                                        if not is_final_state else reward)
 
             # Adjust weights to obtain objective Q-value.
@@ -158,7 +156,7 @@ class DeepQLearner(object):
         self.explotation_rate = self.max_explotation_rate - (self.max_explotation_rate / (num_episode + 1))
 
     
-    def update(self, environment, state, action, reward, new_state, is_final_state, num_episode, num_steps):
+    def update(self, environment, state, action, reward, new_state, is_final_state, num_episode):
         """
         Function that implements Deep Q-Learning reinforcement learning 
 
@@ -170,7 +168,6 @@ class DeepQLearner(object):
             new_state: The new state reached by the agent after taking the action.
             is_final_state: Boolean indicating whether the agent has reached the terminal state.
             num_episode (int): Number of executed episodes.
-            num_steps (int): Number of steps taken in the episode.
 
         Returns:
             None: Updates the Q-table in place according to the Q-Learning algorithm.
@@ -179,7 +176,8 @@ class DeepQLearner(object):
         self.save_experience_replay_in_memory(state=state, action=action, reward=reward, new_state=new_state,
                                                is_final_state=is_final_state)
         # check whether reached to the episode end or final state. If yes, train the model for learning.
-        if is_final_state or num_steps > self.max_steps:
+        if is_final_state: 
+            print(f"Starting learning process...")
             self.learn(actions=environment.actions, num_episode=num_episode)
             self.reset()
 
@@ -191,7 +189,7 @@ class DeepQLearner(object):
         states = list(itertools.product(list(range(0, len(self.environment.rewards[0]))), repeat=2))
 
         # Predict all states Q(s,a)
-        q_table = self.model.predict(states)     
+        q_table = self.model.predict(states, verbose=0)    
 
         # Print the results in a dataframe form
         df = (pd.DataFrame(data=q_table,                          
@@ -212,7 +210,7 @@ class DeepQLearner(object):
         states = list(itertools.product(list(range(0, len(self.environment.rewards[0]))), repeat=2))
 
         # Predict all states Q(s,a)
-        q_table = self.model.predict(states)     
+        q_table = self.model.predict(states, verbose=0)     
 
         # Obtain a list of best actions for each state based on the highest Q-value.
         best_actions = np.array([list(self.environment.actions)[np.argmax(row)] for row in q_table])
@@ -234,7 +232,7 @@ class DeepQLearner(object):
         states = list(itertools.product(list(range(0, len(self.environment.rewards[0]))), repeat=2))
 
         # Predict all states Q(s,a)
-        q_table = self.model.predict(states)     
+        q_table = self.model.predict(states, verbose=0)     
 
         # obtain best q values of each state 
         best_values = np.array([[np.max(row) for row in q_table]])

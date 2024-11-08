@@ -13,8 +13,7 @@ from modules import environment as env
 
 
 def agent_deep_q_learning(learner=dql.DeepQLearner,  environment = env.Environment,
-              num_episodes=10, discount_factor=0.1, explotation_ratio=0.95,
-              max_steps=500, verbose=False):
+              num_episodes=10, discount_factor=0.1, explotation_ratio=0.95, verbose=False):
     """
     Method that execute agents deep q-learning process.
 
@@ -25,7 +24,6 @@ def agent_deep_q_learning(learner=dql.DeepQLearner,  environment = env.Environme
         discount_factor (float): Discount factor to weigh future rewards. 
             (0 = short-term focus, 1 = long-term focus).
         explotation_ratio (float): Explotation ratio, controlling the trade-off between exploration and exploitation.
-        max_steps (int): Number of steps to save in memory for each episode.
         verbose (Boolean): flag that refers whether debug information must be printed or not.
 
     Returns:
@@ -38,14 +36,14 @@ def agent_deep_q_learning(learner=dql.DeepQLearner,  environment = env.Environme
     learner = learner(environment=environment,
                       max_memory=100, # DETERMINE BEST VALUE
                       discount_factor=discount_factor,
-                      explotation_rate=explotation_ratio,
-                      max_steps=max_steps) # DETERMINE BEST VALUE
+                      explotation_rate=explotation_ratio) # DETERMINE BEST VALUE
 
     # Episode variable to print learning process result
     last_episode = None
 
     # Iterate for episodes
     for n_episode in range(0, num_episodes):
+        print(f"Iterating episode: {n_episode +1}")
         # initialize variables
         state = environment.reset(src)
         is_final_state = False
@@ -69,8 +67,7 @@ def agent_deep_q_learning(learner=dql.DeepQLearner,  environment = env.Environme
                            reward=reward,
                            new_state=deepcopy(new_state),
                            is_final_state=is_final_state,
-                           num_episode=n_episode + 1,
-                           num_steps=num_steps_episode)
+                           num_episode=n_episode + 1)
             
              # Episode step sum
             num_steps_episode += 1 
