@@ -57,7 +57,7 @@ def agent_learning(learner=learn.Learner,  environment = env.Environment,
 
         # initialize variables
         state = environment.reset(src)  # Initialize environment for each episode. Set agent start point,
-        is_final_state = np.array_equal(environment.state, environment.final_state)   
+        is_final_state = False
         num_steps_episode = 0
 
         # start learning
@@ -144,7 +144,7 @@ def print_process_info(best_episode, start_point, print_best_episode_info=True,
         best_episode['learner'].print_best_actions_states()
 
     if print_steps:
-        print('\nSteps: \n   {}'.format(best_episode['episode'].actions_done))
+        print('\nSTEPS: \n   {}'.format(best_episode['episode'].actions_done))
 
     if print_path:
         print('\nPATH:')

@@ -19,7 +19,7 @@ class Learner(object):
         Parameters:
             environment (Environment): The environment in which the algorithm will interact and take actions.
             learning_rate (float): Learning rate that determines the extent of learning in each step.
-            discount_factor (float): Discount factor to weigh future rewards. 
+            discount_factor (float): Discount factor to weight future rewards. 
                 (0 = short-term focus, 1 = long-term focus).
             ratio_exploration (float): Exploration ratio, controlling the trade-off between exploration and exploitation.
         """
@@ -103,9 +103,9 @@ class Learner(object):
         best = [[max(vi) for vi in row] for row in self.q_table] # obtain max values of each state 
 
         # print result as dataframe
-        print(pd.DataFrame(data=np.array([np.array(xi) for xi in best]), # positionate best values in each state 
-                           index=["x{}".format(str(i)) for i in range(len(best))], # add state row values
-                           columns=["y{}".format(str(i)) for i in range(len(best[0]))])) # add state col values
+        print(pd.DataFrame(data=np.array([np.array(xi) for xi in best]), # Place best action values in each state
+                           index=["x{}".format(str(i)) for i in range(len(best))], # Add row labels
+                           columns=["y{}".format(str(i)) for i in range(len(best[0]))])) # Add col labels
         
     def print_best_actions_states(self):
         """
