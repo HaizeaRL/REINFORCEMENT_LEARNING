@@ -1,5 +1,5 @@
-# Use the official Python 3.7 image from Docker Hub
-FROM python:3.7
+# Use the official TensorFlow 2.10.0 image for CPU from Docker Hub
+FROM tensorflow/tensorflow:2.10.0
 
 # Set the working directory inside the container
 WORKDIR /usr/local/app
@@ -20,6 +20,10 @@ COPY . .
 
 # Set environment variable to make Python output unbuffered
 ENV PYTHONUNBUFFERED=1
+
+# Suppress TensorFlow messages
+ENV TF_CPP_MIN_LOG_LEVEL=2
+ENV CUDA_VISIBLE_DEVICES=-1 
 
 # Command to run Jupyter notebook in the container
 CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--no-browser", "--allow-root", "--NotebookApp.token=''"]
