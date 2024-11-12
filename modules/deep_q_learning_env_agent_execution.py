@@ -13,7 +13,8 @@ from modules import environment as env
 
 
 def agent_deep_q_learning(learner=dql.DeepQLearner,  environment = env.Environment,
-              num_episodes=10, discount_factor=0.1, explotation_ratio=0.95, verbose=False):
+              num_episodes=10, discount_factor=0.1, explotation_ratio=0.95, 
+              max_steps=100, verbose=False):
     """
     Method that execute agents deep q-learning process.
 
@@ -36,7 +37,8 @@ def agent_deep_q_learning(learner=dql.DeepQLearner,  environment = env.Environme
     learner = learner(environment=environment,
                       max_memory=100, # DETERMINE BEST VALUE
                       discount_factor=discount_factor,
-                      explotation_rate=explotation_ratio) # DETERMINE BEST VALUE
+                      explotation_rate=explotation_ratio,
+                      max_steps=max_steps) # DETERMINE BEST VALUE
 
     # Episode variable to print learning process result
     last_episode = None
@@ -50,38 +52,26 @@ def agent_deep_q_learning(learner=dql.DeepQLearner,  environment = env.Environme
         num_steps_episode = 0
 
         # start learning process
-        while not is_final_state:
+        while not is_final_state and num_steps_episode <= learner.max_steps:
+            # perform steps within the episode
             old_state = state[:]
+            next_action = learner.get_next_action(state=old_state)
+            new_state, reward, is_final_state = environment.step(next_action)
             
-            # Select action, according to explotation ratio.
-            next_action = learner.get_next_action(state=old_state)       
-
-            # Execute the action.
-            new_state, reward, is_final_state = environment.step(next_action) 
-
-            # Execute learning process, for each step saves experience replay data
-            # Select action batch and learns how to adjust weights
-            learner.update(environment=environment,  
-                           state=deepcopy(old_state),
-                           action=next_action,
-                           reward=reward,
-                           new_state=deepcopy(new_state),
-                           is_final_state=is_final_state,
-                           num_episode=n_episode + 1)
+            # update learner with the step information
+            learner.update(environment=environment, state=deepcopy(old_state), action=next_action,
+                        reward=reward, new_state=deepcopy(new_state), is_final_state=is_final_state,
+                        num_episode=n_episode + 1, num_steps=num_steps_episode)
             
-             # Episode step sum
-            num_steps_episode += 1 
-
-        # Save last information
-        last_episode = {'episode': environment,
-                        'learner': learner}
+            num_steps_episode += 1
+        
+        # call learn once after each episode
+        learner.learn(actions=environment.actions, num_episode=n_episode + 1)
 
         if verbose:
-            # Print episode steps and reward
-            print('EPISODE {} - Actions: {} - Reward: {}'
-                  .format(n_episode + 1, num_steps_episode, environment.total_reward))
+            print(f'EPISODE {n_episode + 1} - Actions: {num_steps_episode} - Reward: {environment.total_reward}')
 
-    print_process_info(last_episode=last_episode, start_position = src)
+    print_process_info(last_episode=last_episode, start_point = src)
 
 
 def print_process_info(last_episode,  start_point, print_q_table=True, 

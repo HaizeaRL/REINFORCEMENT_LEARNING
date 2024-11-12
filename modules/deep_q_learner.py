@@ -12,7 +12,7 @@ from tensorflow.keras.layers import Dense
 
 class DeepQLearner(object):
    
-    def __init__(self, environment, max_memory=100, discount_factor=0.1, explotation_rate=0.95):
+    def __init__(self, environment, max_memory=100, discount_factor=0.1, explotation_rate=0.95, max_steps=500):
         """
         Class implementing a reinforcement Deep Q-learning algorithm.
         
@@ -22,6 +22,8 @@ class DeepQLearner(object):
             discount_factor (float): Discount factor to weigh future rewards. 
                 (0 = short-term focus, 1 = long-term focus).
             explotation_rate (float): Explotation ratio, controlling the trade-off between exploration and exploitation.
+            max_steps (int): Maximum number of steps to take per each episode.
+
         """
         self.environment = environment       
         self.model = self.create_model()   # Neural Network creation
@@ -30,6 +32,8 @@ class DeepQLearner(object):
         # Experience Replay controls:  Current State | Taken Action | Reward | Next State | Is final state?
         self.memory = list()  # List of actions taken                  
         self.max_memory = max_memory # maximum memory size
+        self.max_steps= max_steps # used to control memory shape
+
         
         # Too ratios: these values will gradually guide the agent from exploration to exploitation.
         self.max_explotation_rate = explotation_rate
@@ -138,9 +142,18 @@ class DeepQLearner(object):
         # select randomly some steps from memory.
         batch = (random.sample(self.memory, 100)
                  if len(self.memory) > 100 else random.sample(self.memory, len(self.memory)))
+        
+        print("Starting learning process...")
+        
+        # for each selected steps, apply the learning process       
+        for i, (state, action, reward, new_state, is_final_state) in enumerate(batch):
+       
+            # Calculate remaining batches
+            batches_left = len(batch) - i
+            # Print only every 50 batches left
+            if batches_left % 50 == 0:
+                print(f"\tBatches left: {batches_left}")          
 
-        # for each selected steps, apply the learning process
-        for state, action, reward, new_state, is_final_state in batch:
             # Predict Q-value for state
             q_values = self.model.predict([state], verbose=0)
             idx_action = list(actions).index(action)
@@ -152,11 +165,12 @@ class DeepQLearner(object):
             # Adjust weights to obtain objective Q-value.
             self.model.fit(np.array([state]), q_values, epochs=1, verbose=0)
 
+        print("Learning process finished.")
+
         # Update explotation rate gradually to guide the agent from exploration to exploitation.
         self.explotation_rate = self.max_explotation_rate - (self.max_explotation_rate / (num_episode + 1))
-
     
-    def update(self, environment, state, action, reward, new_state, is_final_state, num_episode):
+    def update(self, environment, state, action, reward, new_state, is_final_state):
         """
         Function that implements Deep Q-Learning reinforcement learning 
 
@@ -167,19 +181,13 @@ class DeepQLearner(object):
             reward: The reward received for taking the specified action.
             new_state: The new state reached by the agent after taking the action.
             is_final_state: Boolean indicating whether the agent has reached the terminal state.
-            num_episode (int): Number of executed episodes.
 
         Returns:
             None: Updates the Q-table in place according to the Q-Learning algorithm.
         """
         # save current state in memory
-        self.save_experience_replay_in_memory(state=state, action=action, reward=reward, new_state=new_state,
-                                               is_final_state=is_final_state)
-        # check whether reached to the episode end or final state. If yes, train the model for learning.
-        if is_final_state: 
-            print(f"Starting learning process...")
-            self.learn(actions=environment.actions, num_episode=num_episode)
-            self.reset()
+        self.save_experience_replay_in_memory(state=state, action=action, reward=reward, 
+                                              new_state=new_state, is_final_state=is_final_state)
 
     def print_q_table(self):
         """

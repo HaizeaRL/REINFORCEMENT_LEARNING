@@ -1,5 +1,4 @@
-# Use the official TensorFlow 2.10.0 image for CPU from Docker Hub
-FROM tensorflow/tensorflow:2.10.0
+FROM python:3.7-slim
 
 # Set the working directory inside the container
 WORKDIR /usr/local/app
