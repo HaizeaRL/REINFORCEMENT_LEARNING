@@ -233,10 +233,10 @@ def create_env_reward_matrix(dim, barriers, src, dest):
     # initialize matrix
     m = [[0 for _ in range(dim)] for _ in range(dim)]
 
-    # mark barriers as -10
+    # mark barriers as -30
     for row, col in barriers:
         if not is_end_point(row, col, dest) and not is_start_point(row, col, src):
-            m[row][col] = -10 
+            m[row][col] = -30 
             
     # mark destination as 100
     m[dest[0]][dest[1]] = 100
