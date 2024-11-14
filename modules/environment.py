@@ -75,7 +75,7 @@ class Environment(object):
         
         return self.state[0], self.state[1]
 
-    def step(self, action, verbose = False):
+    def step(self, action):
         """
         Method that executes a given action from the set of actions {Up, Down, Left, Right}
         Guide the agent in the environment.
@@ -87,7 +87,6 @@ class Environment(object):
             self.state (tuple): The current state
             reward (int): The obtained reward
             is_final_state (boolean): Whether we have reached the final state.
-            verbose (boolean): Whether debug logs must be showed or not.
         """
         old_state = deepcopy(self.state)  # save current state          
         self.__apply_action(action)       # Perform the action (change of state)           

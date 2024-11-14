@@ -12,7 +12,7 @@ from tensorflow.keras.layers import Dense
 
 class DeepQLearner(object):
    
-    def __init__(self, environment, max_memory=100, discount_factor=0.1, explotation_rate=0.95, max_steps=500):
+    def __init__(self, environment, max_memory=1000, discount_factor=0.1, explotation_rate=0.95, max_steps=500):
         """
         Class implementing a reinforcement Deep Q-learning algorithm.
         
@@ -114,15 +114,32 @@ class DeepQLearner(object):
         Parameters:
             state: Agent state
             action: Taken action by the agent.
-            reward: Reward obtained after make the action.
-            new_state: The new state the agent is moved after take the action.
-            is_final_state (Boolean): Flag which indicate whether the agent reach to destination or not.
+            reward: Reward obtained after making the action.
+            new_state: The new state the agent moves to after taking the action.
+            is_final_state (Boolean): Flag which indicates whether the agent reached the destination or not.
         """
-        # append experience_replay to memory
+        
+        # Apply a penalty if the number of steps exceeds max_steps
+        if len(self.memory) >= self.max_steps:
+            reward = -100
+
+        # Penalize cyclic behavior by checking recent memory for repeated state-action pairs 
+        recent_steps = [(s, a) for s, a, _, _, _ in self.memory[-5:]] # Check last 5 steps 
+        if (state, action) in recent_steps: 
+            reward -= 20 # Additional penalty for repeating a state-action cycle 
+
+        # Penalize if the same action is taken in the same state
+        if len(self.memory) > 0 and self.memory[-1][0] == state and self.memory[-1][1] == action:
+            reward -= 10 # Additional penalty for repeating the same action in the same state       
+
+        # Append the experience replay to memory
         self.memory.append((state, action, reward, new_state, is_final_state))
-        # if reach to limit remove first action.
+    
+        # If memory exceeds max_memory, remove the oldest action
         if len(self.memory) > self.max_memory:
             del self.memory[0]
+    
+
 
     def learn(self, actions, num_episode):
         """
@@ -140,20 +157,11 @@ class DeepQLearner(object):
             None: Learns from actions taken based on learned knowledge as episodes progress.        
         """
         # select randomly some steps from memory.
-        batch = (random.sample(self.memory, 100)
-                 if len(self.memory) > 100 else random.sample(self.memory, len(self.memory)))
-        
-        print("Starting learning process...")
+        batch = (random.sample(self.memory, 128)
+                 if len(self.memory) > 128 else random.sample(self.memory, len(self.memory)))
         
         # for each selected steps, apply the learning process       
-        for i, (state, action, reward, new_state, is_final_state) in enumerate(batch):
-       
-            # Calculate remaining batches
-            batches_left = len(batch) - i
-            # Print only every 50 batches left
-            if batches_left % 50 == 0:
-                print(f"\tBatches left: {batches_left}")          
-
+        for state, action, reward, new_state, is_final_state in batch:       
             # Predict Q-value for state
             q_values = self.model.predict([state], verbose=0)
             idx_action = list(actions).index(action)
@@ -162,33 +170,12 @@ class DeepQLearner(object):
             q_values[0][idx_action] = (reward + (self.discount_factor * np.amax(self.model.predict([new_state], verbose=0)[0]))
                                        if not is_final_state else reward)
 
-            # Adjust weights to obtain objective Q-value.
+            # Adjust weights to obtain objective Q-values.
             self.model.fit(np.array([state]), q_values, epochs=1, verbose=0)
 
-        print("Learning process finished.")
-
         # Update explotation rate gradually to guide the agent from exploration to exploitation.
-        self.explotation_rate = self.max_explotation_rate - (self.max_explotation_rate / (num_episode + 1))
+        self.exploitation_rate = min(0.95, self.max_explotation_rate * (num_episode / (num_episode + 1)))
     
-    def update(self, environment, state, action, reward, new_state, is_final_state):
-        """
-        Function that implements Deep Q-Learning reinforcement learning 
-
-        Parameters:
-            environment (Environment): The environment in which the algorithm will interact and take actions.
-            state: The agent's current state.
-            action: The action to be taken.
-            reward: The reward received for taking the specified action.
-            new_state: The new state reached by the agent after taking the action.
-            is_final_state: Boolean indicating whether the agent has reached the terminal state.
-
-        Returns:
-            None: Updates the Q-table in place according to the Q-Learning algorithm.
-        """
-        # save current state in memory
-        self.save_experience_replay_in_memory(state=state, action=action, reward=reward, 
-                                              new_state=new_state, is_final_state=is_final_state)
-
     def print_q_table(self):
         """
         Function that prints Q-Values learned by the NN.
