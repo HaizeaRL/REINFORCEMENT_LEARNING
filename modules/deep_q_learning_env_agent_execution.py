@@ -42,14 +42,16 @@ def agent_deep_q_learning(learner=dql.DeepQLearner,  environment = env.Environme
                       max_steps=max_steps) # DETERMINE BEST VALUE
 
     # Episode variable to print learning process result
-    best_episode = {'episode': None ,'reward': - float('inf'), 'learner': None}
+    best_episode = {'episode': None ,'reward': -float('inf'), 'learner': None}
 
     # Iterate for episodes
+    print("Iterating through episodes. Evolution prints will appear every 10 episodes.")
+    learner.ctrl_episode += 1
     for n_episode in range(0, num_episodes):
         # initialize variables
         state = environment.reset(src)
         is_final_state = False
-        num_steps_episode = 0
+        num_steps_episode = 0   
 
         # start learning process
         while not is_final_state and num_steps_episode <= learner.max_steps:
@@ -68,14 +70,17 @@ def agent_deep_q_learning(learner=dql.DeepQLearner,  environment = env.Environme
         learner.learn(actions=environment.actions, num_episode=n_episode + 1)
         learner.reset()    
           
-        # Update best episode if current reward is the highest
-        if is_final_state and environment.total_reward < best_episode['reward']:
-            best_episode = {'episode': environment,
+        # Update best episode if current reward is the highest having less steps
+        if is_final_state and environment.total_reward >= best_episode['reward'] \
+            and (best_episode['episode'] == None or \
+                len(environment.actions_done) <= len(best_episode['episode'].actions_done)):
+            best_episode = {'episode': deepcopy(environment),
                             'reward': environment.total_reward,
-                            'learner_state': deepcopy(learner)}
+                            'learner': learner}
         
-        if verbose:
+        if verbose and (n_episode + 1) % 10 == 0:
             print(f'EPISODE {n_episode + 1} - Actions: {num_steps_episode} - Reward: {environment.total_reward}')
+            print(f"New expl.ratio: {round(learner.explotation_rate,2)}. Best reward now: {best_episode['reward']}. Best n_step now: {len(best_episode['episode'].actions_done)}")
 
     
     print_process_info(best_episode=best_episode, start_point = src)

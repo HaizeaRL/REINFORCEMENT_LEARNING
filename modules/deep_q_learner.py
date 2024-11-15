@@ -38,6 +38,8 @@ class DeepQLearner(object):
         # Too ratios: these values will gradually guide the agent from exploration to exploitation.
         self.max_explotation_rate = explotation_rate
         self.explotation_rate = 0 
+        self.ctrl_episode = 0
+
        
 
     
@@ -137,8 +139,7 @@ class DeepQLearner(object):
     
         # If memory exceeds max_memory, remove the oldest action
         if len(self.memory) > self.max_memory:
-            del self.memory[0]
-    
+            del self.memory[0]    
 
 
     def learn(self, actions, num_episode):
@@ -174,8 +175,11 @@ class DeepQLearner(object):
             self.model.fit(np.array([state]), q_values, epochs=1, verbose=0)
 
         # Update explotation rate gradually to guide the agent from exploration to exploitation.
-        self.exploitation_rate = min(0.95, self.max_explotation_rate * (num_episode / (num_episode + 1)))
-    
+        if num_episode % 10 == 0:
+            # Actualizo el ratio de explotación
+            self.ctrl_episode += 1           
+            self.explotation_rate = self.max_explotation_rate - (self.max_explotation_rate / (self.ctrl_episode))
+
     def print_q_table(self):
         """
         Function that prints Q-Values learned by the NN.
