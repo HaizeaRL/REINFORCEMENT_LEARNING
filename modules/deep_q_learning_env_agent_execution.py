@@ -42,7 +42,7 @@ def agent_deep_q_learning(learner=dql.DeepQLearner,  environment = env.Environme
                       max_steps=max_steps) # DETERMINE BEST VALUE
 
     # Episode variable to print learning process result
-    best_episode = {'episode': None ,'reward': -float('inf'), 'learner': None}
+    best_episode = {'episode': None ,'reward': -float('inf'), 'steps': float('inf'), 'learner': None}
 
     # Iterate for episodes
     print("Iterating through episodes. Evolution prints will appear every 10 episodes.")
@@ -70,17 +70,19 @@ def agent_deep_q_learning(learner=dql.DeepQLearner,  environment = env.Environme
         learner.learn(actions=environment.actions, num_episode=n_episode + 1)
         learner.reset()    
           
-        # Update best episode if current reward is the highest having less steps
-        if is_final_state and environment.total_reward >= best_episode['reward'] \
-            and (best_episode['episode'] == None or \
-                len(environment.actions_done) <= len(best_episode['episode'].actions_done)):
-            best_episode = {'episode': deepcopy(environment),
-                            'reward': environment.total_reward,
-                            'learner': learner}
+        # Check if the current episode is the best so far
+        if environment.total_reward > best_episode['reward'] or \
+          (environment.total_reward == best_episode['reward'] and \
+            num_steps_episode < best_episode['steps']):  # Prefer fewer steps for the same reward
+            best_episode['episode'] = deepcopy(environment)
+            best_episode['reward'] = environment.total_reward
+            best_episode['steps'] = num_steps_episode
+            best_episode['learner'] = learner
         
-        if verbose and (n_episode + 1) % 10 == 0:
-            print(f'EPISODE {n_episode + 1} - Actions: {num_steps_episode} - Reward: {environment.total_reward}')
-            print(f"New expl.ratio: {round(learner.explotation_rate,2)}. Best reward now: {best_episode['reward']}. Best n_step now: {len(best_episode['episode'].actions_done)}")
+        print(f'\tEPISODE {n_episode + 1} - Actions: {num_steps_episode} - Reward: {environment.total_reward}')
+        if verbose and (n_episode + 1) % 10 == 0:     
+            print(f"CTRL POINT: {learner.ctrl_episode-1}")       
+            print(f"New expl.ratio: {round(learner.explotation_rate,2)}. Best reward now: {best_episode['reward']}. Best n_step now: {best_episode['steps']}")
 
     
     print_process_info(best_episode=best_episode, start_point = src)

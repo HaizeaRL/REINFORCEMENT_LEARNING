@@ -120,19 +120,41 @@ class DeepQLearner(object):
             new_state: The new state the agent moves to after taking the action.
             is_final_state (Boolean): Flag which indicates whether the agent reached the destination or not.
         """
+        # Ensure state and action are immutable tuples
+        state_tuple = tuple(state) if isinstance(state, (list, tuple)) else (state,)
+        new_state_tuple = tuple(new_state) if isinstance(new_state, (list, tuple)) else (new_state,)
+        state_action_tuple = (state_tuple, action)        
+        no_good_action = reward in [-30, -50]
         
-        # Apply a penalty if the number of steps exceeds max_steps
+        # Initialize tracking dictionaries if not already done
+        if not hasattr(self, 'new_states'):
+            self.new_states = {}
+        if not hasattr(self, 'state_actions'):
+            self.state_actions = {}
+
+        # Track visit counts for new state
+        self.new_states[new_state_tuple] = self.new_states.get(new_state_tuple, 0) + 1
+
+        # Track visit counts for state-action pair
+        self.state_actions[state_action_tuple] = self.state_actions.get(state_action_tuple, 0) + 1
+
+        # Reward adjustments based on visit counts
+        if self.new_states[new_state_tuple] > 2:
+            if no_good_action:
+                reward -= 20  # Large penalty for revisiting penalized states
+        elif self.new_states[new_state_tuple] == 1 and not no_good_action:
+            reward += 90  # Bonus for exploring new non-penalized states
+        elif self.new_states[new_state_tuple] == 1 and  no_good_action:
+            reward -= 30  # extra penalty for go penalized states
+               
         if len(self.memory) >= self.max_steps:
-            reward = -100
+            reward -= 100 # Great penalty
 
-        # Penalize cyclic behavior by checking recent memory for repeated state-action pairs 
-        recent_steps = [(s, a) for s, a, _, _, _ in self.memory[-5:]] # Check last 5 steps 
-        if (state, action) in recent_steps: 
-            reward -= 20 # Additional penalty for repeating a state-action cycle 
-
-        # Penalize if the same action is taken in the same state
-        if len(self.memory) > 0 and self.memory[-1][0] == state and self.memory[-1][1] == action:
-            reward -= 10 # Additional penalty for repeating the same action in the same state       
+        if is_final_state and reward < 0:
+            reward -= 100 # Great penalty
+        
+        # update total reward
+        self.environment.total_reward += reward
 
         # Append the experience replay to memory
         self.memory.append((state, action, reward, new_state, is_final_state))
@@ -148,7 +170,7 @@ class DeepQLearner(object):
         Gets randomly some actions from memory and apply weight adjust.
 
         This method also balance exploring and explotation actions by updating the exploitation ratio as follows:
-        exploitation_ratio = exploitation_ratio - (max_exploitation_ratio / (num_episodes + 1))
+        exploitation_ratio = exploitation_ratio - (max_exploitation_ratio / (num_episode + 1))
 
         Parameters:
             actions: Possible agent actions {Up, Down, Right, Left} to get taken action index to update q_value.
@@ -176,9 +198,10 @@ class DeepQLearner(object):
 
         # Update explotation rate gradually to guide the agent from exploration to exploitation.
         if num_episode % 10 == 0:
-            # Actualizo el ratio de explotación
-            self.ctrl_episode += 1           
+            # Actualizo el ratio de explotación            
+            self.ctrl_episode += 1  
             self.explotation_rate = self.max_explotation_rate - (self.max_explotation_rate / (self.ctrl_episode))
+            
 
     def print_q_table(self):
         """
