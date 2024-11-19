@@ -64,6 +64,8 @@ class DeepQLearner(object):
         model.add(Dense(output_dim, activation='linear'))
         model.compile(loss='mse', optimizer='adam')
 
+        #model.summary()
+
         return model
     
     def get_next_action(self, state):
